@@ -1,34 +1,34 @@
-import lodash from 'lodash'
-import { Data } from '../components/index.js'
-import HelpTheme from './help/HelpTheme.js'
-import runtimeRender from '../common/runtimeRender.js'
-import { Config } from '../utils/config.js'
+import lodash from "lodash"
+import { Data } from "../components/index.js"
+import HelpTheme from "./help/HelpTheme.js"
+import runtimeRender from "../common/runtimeRender.js"
+import { Config } from "../utils/config.js"
 
 export class help extends plugin {
-  constructor () {
+  constructor() {
     super({
-      name: '憨憨帮助',
-      dsc: '憨憨帮助',
-      event: 'message',
+      name: "憨憨帮助",
+      dsc: "憨憨帮助",
+      event: "message",
       priority: 100,
       rule: [
         {
-          reg: '^#?(nav|憨憨帮助)$',
-          fnc: 'help'
+          reg: "^#?(nav|憨憨帮助)$",
+          fnc: "help"
         },
         {
-          reg: '^#?搜一搜帮助$',
-          fnc: 'so_help'
+          reg: "^#?搜一搜帮助$",
+          fnc: "so_help"
         }
       ]
     })
   }
 
-  async help (e) {
-    if (e.bot.config?.markdown?.type) { return await this.reply('按钮菜单') }
+  async help(e) {
+    if (e.bot.config?.markdown?.type) { return await this.reply("按钮菜单") }
     let custom = {}
     let help = {}
-    let { diyCfg, sysCfg } = await Data.importCfg('help')
+    let { diyCfg, sysCfg } = await Data.importCfg("help")
 
     // 兼容一下旧字段
     if (lodash.isArray(help.helpCfg)) {
@@ -46,14 +46,14 @@ export class help extends plugin {
     let helpGroup = []
 
     lodash.forEach(helpList, (group) => {
-      if (group.auth && group.auth === 'master' && !e.isMaster) {
+      if (group.auth && group.auth === "master" && !e.isMaster) {
         return true
       }
 
       lodash.forEach(group.list, (help) => {
         let icon = help.icon * 1
         if (!icon) {
-          help.css = 'display:none'
+          help.css = "display:none"
         } else {
           let x = (icon - 1) % 10
           let y = (icon - x - 1) / 10
@@ -64,23 +64,23 @@ export class help extends plugin {
       helpGroup.push(group)
     })
     let themeData = await HelpTheme.getThemeData(diyCfg.helpCfg || {}, sysCfg.helpCfg || {})
-    return await runtimeRender(e, 'help/index', {
+    return await runtimeRender(e, "help/index", {
       helpCfg: helpConfig,
       helpGroup,
       ...themeData,
-      element: 'default'
+      element: "default"
     }, {
       scale: 1.6
     })
   }
 
-  async so_help (e) {
+  async so_help(e) {
     /** e.msg 用户的命令消息 */
-    logger.info('[用户命令]', e.msg)
-    await e.runtime.render('hanhan-plugin', '/help/sys.html')
+    logger.info("[用户命令]", e.msg)
+    await e.runtime.render("hanhan-plugin", "/help/sys.html")
   }
 
-  async reply (message) {
+  async reply(message) {
     return await this.e.reply(message, false, { recallMsg: Config.recall_s })
   }
 }

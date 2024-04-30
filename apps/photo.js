@@ -1,77 +1,77 @@
-import { endingSpeech, followMe, pepTalk } from '../utils/const.js'
-import { sleep, recallSendForwardMsg } from '../utils/common.js'
-import plugin from '../../../lib/plugins/plugin.js'
-import { Config } from '../utils/config.js'
-import fetch from 'node-fetch'
-import axios from 'axios'
+import { endingSpeech, followMe, pepTalk } from "../utils/const.js"
+import { sleep, recallSendForwardMsg } from "../utils/common.js"
+import plugin from "../../../lib/plugins/plugin.js"
+import { Config } from "../utils/config.js"
+import fetch from "node-fetch"
+import axios from "axios"
 
 const valueMap = {
-  集原美: 'jiyuanmei',
-  mc酱: 'mcjiang',
-  兽猫酱: 'shoumao',
-  甘城: 'maoyuna',
-  萌宠: 'mengc',
-  可爱萌宠: 'mengc'
+  集原美: "jiyuanmei",
+  mc酱: "mcjiang",
+  兽猫酱: "shoumao",
+  甘城: "maoyuna",
+  萌宠: "mengc",
+  可爱萌宠: "mengc"
 }
 export class photo extends plugin {
-  constructor () {
+  constructor() {
     super({
-      name: '憨憨图片类',
-      dsc: '憨憨图片类',
-      event: 'message',
+      name: "憨憨图片类",
+      dsc: "憨憨图片类",
+      event: "message",
       priority: 6,
       rule: [
         {
-          reg: `^#?(${Object.keys(valueMap).join('|')})$`,
-          fnc: 'jh'
+          reg: `^#?(${Object.keys(valueMap).join("|")})$`,
+          fnc: "jh"
         },
         {
-          reg: '^(#|/)?每日英语$',
-          fnc: 'mryy'
+          reg: "^(#|/)?每日英语$",
+          fnc: "mryy"
         },
         {
-          reg: '^(#|/)?(acg|随机acg)$',
-          fnc: 'random_acg'
+          reg: "^(#|/)?(acg|随机acg)$",
+          fnc: "random_acg"
         },
         {
-          reg: '^(#|/)?情侣头像$',
-          fnc: 'qltx'
+          reg: "^(#|/)?情侣头像$",
+          fnc: "qltx"
         },
         {
-          reg: '^(#|/)?随机(.*)吧',
-          fnc: 'bdtb'
+          reg: "^(#|/)?随机(.*)吧",
+          fnc: "bdtb"
         },
         {
-          reg: '^(#|/)?英雄联盟台词$',
-          fnc: 'yxlm'
+          reg: "^(#|/)?英雄联盟台词$",
+          fnc: "yxlm"
         },
         {
-          reg: '^#图集解析(.*)$',
-          fnc: 'jx'
+          reg: "^#图集解析(.*)$",
+          fnc: "jx"
         },
         {
-          reg: '^#?图片类菜单$',
-          fnc: 'helps'
+          reg: "^#?图片类菜单$",
+          fnc: "helps"
         }
       ]
     })
     this.task = [
       {
-        cron: '0 30 7 * * ?',
+        cron: "0 30 7 * * ?",
         // cron: '*/1 * * * *',
-        name: 'englishTimeIsUp',
+        name: "englishTimeIsUp",
         fnc: this.englishTimeIsUp
       }
     ]
   }
 
-  async helps (e) {
-    if (e.bot.config?.markdown?.type) { return await this.reply('按钮菜单') }
+  async helps(e) {
+    if (e.bot.config?.markdown?.type) { return await this.reply("按钮菜单") }
   }
 
-  async englishTimeIsUp () {
+  async englishTimeIsUp() {
     let toSend = Config.studyGroups || []
-    let url = 'https://open.iciba.com/dsapi/'
+    let url = "https://open.iciba.com/dsapi/"
     let response = await axios.get(url) // 调用接口获取数据
     const res = response.data
     const img = res.fenxiang_img
@@ -97,15 +97,15 @@ export class photo extends plugin {
           await sleep(2000)
           await Bot.sendGroupMsg(groupId, endingSpeech[Math.floor(Math.random() * endingSpeech.length)])
         } else {
-          logger.warn('机器人不在要发送的群组里。' + groupId)
+          logger.warn("机器人不在要发送的群组里。" + groupId)
         }
       }
     }
   }
 
   // 解析
-  async jx (e) {
-    let key = e.msg.replace(/^#图集解析/, '').trim()
+  async jx(e) {
+    let key = e.msg.replace(/^#图集解析/, "").trim()
     try {
       let url = `http://api.yujn.cn/api/dspjx.php?url=${key}`
       let res = await fetch(url) // 调用接口获取数据
@@ -116,51 +116,51 @@ export class photo extends plugin {
       for (let i = 0; i < result.data.img.length; i++) {
         forwardMsgs.push(segment.image(result.data.img[i]))
       }
-      let dec = '图片'
+      let dec = "图片"
       return this.reply(await recallSendForwardMsg(e, forwardMsgs, false, dec))
     } catch (error) {
-      e.reply('报错：' + error)
+      e.reply("报错：" + error)
     }
   }
 
   // 聚合
-  async jh (e) {
-    let name = valueMap[e.msg.replace('#', '')]
+  async jh(e) {
+    let name = valueMap[e.msg.replace("#", "")]
     await this.reply(segment.image(`http://hanhan.avocado.wiki?${name}`))
     return true // 返回true 阻挡消息不再往下
   }
 
   // 英雄联盟台词
-  async yxlm (e) {
-    let url = 'http://api.yujn.cn/api/yxlm.php?'
+  async yxlm(e) {
+    let url = "http://api.yujn.cn/api/yxlm.php?"
     let response = await fetch(url) // 调用接口获取数据
     let result = await response.json()
     if (result.code != 200) {
-      return e.reply('api寄了')
+      return e.reply("api寄了")
     }
     console.log(result)
     let forwardMsgs = []
-    forwardMsgs.push('英雄台词：' + result.data.name)
+    forwardMsgs.push("英雄台词：" + result.data.name)
     if (result.data.content) {
-      forwardMsgs.push('评论：' + result.data.content)
+      forwardMsgs.push("评论：" + result.data.content)
     }
-    if (e.bot?.adapter != 'QQBot') {
+    if (e.bot?.adapter != "QQBot") {
       forwardMsgs.push(segment.image(result.data.img))
       forwardMsgs.push(result.data.img)
     }
 
-    let dec = '英雄联盟台词'
+    let dec = "英雄联盟台词"
     return this.reply(await recallSendForwardMsg(e, forwardMsgs, false, dec))
   }
 
   // 百度贴吧
-  async bdtb (e) {
+  async bdtb(e) {
     let forwardMsgs = []
-    let encode = e.msg.replace(/^#?随机/, '').trim()
-    let prefix = encode.split('吧')[0] // 使用split()方法以"吧"为分隔符分割字符串，然后获取第一个元素（吧字前面的内容）
+    let encode = e.msg.replace(/^#?随机/, "").trim()
+    let prefix = encode.split("吧")[0] // 使用split()方法以"吧"为分隔符分割字符串，然后获取第一个元素（吧字前面的内容）
     console.log(prefix) // 输出提取的内容
     if (!prefix && prefix.length == 0) {
-      return e.reply('你没有输入要查询的贴吧')
+      return e.reply("你没有输入要查询的贴吧")
     }
     let url = `https://api.yujn.cn/api/tieba.php?type=json&msg=${prefix}`
     let res = await axios.get(url) // 调用接口获取数据
@@ -171,7 +171,7 @@ export class photo extends plugin {
     }
     console.log(result)
     if (res.status == 200) {
-      forwardMsgs.push('昵称：' + result.name)
+      forwardMsgs.push("昵称：" + result.name)
       forwardMsgs.push(result.time)
       forwardMsgs.push(result.title)
       if (result.text) {
@@ -179,9 +179,9 @@ export class photo extends plugin {
       }
       if (result.images && result.images.length > 0) {
         for (let i = 0; i < result.images.length; i++) {
-          if (result.images[i] != 'null') {
+          if (result.images[i] != "null") {
             forwardMsgs.push(segment.image(result.images[i]))
-            if (e.bot?.adapter != 'QQBot') {
+            if (e.bot?.adapter != "QQBot") {
               forwardMsgs.push(result.images[i])
               // console.log(i)
             }
@@ -191,13 +191,13 @@ export class photo extends plugin {
       let dec = encode
       return this.reply(await recallSendForwardMsg(e, forwardMsgs, false, dec))
     } else {
-      e.reply('查询失败,可能接口失效力~，请联系憨憨捏~')
+      e.reply("查询失败,可能接口失效力~，请联系憨憨捏~")
     }
   }
 
   // 情侣头像
-  async qltx (e) {
-    let url = 'http://api.yujn.cn/api/qltx.php?type=json&lx=qltx'
+  async qltx(e) {
+    let url = "http://api.yujn.cn/api/qltx.php?type=json&lx=qltx"
     let response = await fetch(url) // 调用接口获取数据
     let result = await response.json()
     console.log(result)
@@ -205,41 +205,41 @@ export class photo extends plugin {
     forwardMsgs.push(result.title)
     forwardMsgs.push(result.detail)
     if (result.image_count == 0) {
-      forwardMsgs.push('没有图片')
+      forwardMsgs.push("没有图片")
     } else {
       for (let i = 0; i < result.image_count; i++) {
         forwardMsgs.push(segment.image(result.img[i]))
-        if (e.bot?.adapter != 'QQBot') {
+        if (e.bot?.adapter != "QQBot") {
           forwardMsgs.push(result.img[i])
         }
         // console.log(i)
       }
     }
 
-    let dec = '情侣头像'
+    let dec = "情侣头像"
     return this.reply(await recallSendForwardMsg(e, forwardMsgs, false, dec))
   }
 
   // 每日英语
-  async mryy (e) {
+  async mryy(e) {
     let sendmsg = []
-    let url = 'https://open.iciba.com/dsapi/'
+    let url = "https://open.iciba.com/dsapi/"
     let response = await axios.get(url) // 调用接口获取数据
     sendmsg.push(segment.image(response.data.fenxiang_img))
     await this.reply(sendmsg)
   }
 
   // 随机二次元
-  async random_acg (e) {
+  async random_acg(e) {
     let apiList = [
-      'https://www.dmoe.cc/random.php',
-      'http://www.98qy.com/sjbz/api.php',
-      'https://t.mwm.moe/mp/',
-      'https://t.mwm.moe/pc/',
-      'https://api.ghser.com/random/pc.php',
-      'https://api.ghser.com/random/pe.php',
-      'https://www.loliapi.com/acg/',
-      'https://api.paugram.com/wallpaper/'
+      "https://www.dmoe.cc/random.php",
+      "http://www.98qy.com/sjbz/api.php",
+      "https://t.mwm.moe/mp/",
+      "https://t.mwm.moe/pc/",
+      "https://api.ghser.com/random/pc.php",
+      "https://api.ghser.com/random/pe.php",
+      "https://www.loliapi.com/acg/",
+      "https://api.paugram.com/wallpaper/"
     ]
     let randomType = Math.random()
     if (randomType < 1) {
@@ -249,7 +249,7 @@ export class photo extends plugin {
     }
   }
 
-  async reply (message) {
+  async reply(message) {
     return await this.e.reply(message, false, { recallMsg: Config.recall_s })
   }
 }

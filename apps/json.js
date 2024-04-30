@@ -3,9 +3,9 @@
 
 // const RootPath = process.cwd() + '/plugins/hanhan-plugin/'
 export default class json extends plugin {
-  constructor () {
+  constructor() {
     super({
-      name: '憨憨卡片',
+      name: "憨憨卡片",
       priority: 50,
       rule: [
         // {
@@ -13,21 +13,21 @@ export default class json extends plugin {
         //   fnc: 'sendMsdTOTargetGroup'
         // },
         {
-          reg: '^#(发送)json(消息|信息)?([\\s\\S]*)$',
-          fnc: 'sendJson'
+          reg: "^#(发送)json(消息|信息)?([\\s\\S]*)$",
+          fnc: "sendJson"
         }
       ]
     })
   }
 
-  async sendJson (e) {
+  async sendJson(e) {
     let message = e.msg
-    message = message.replace('#发送json', '')
-    message = message.replace('消息', '')
-    message = message.replace('信息', '')
+    message = message.replace("#发送json", "")
+    message = message.replace("消息", "")
+    message = message.replace("信息", "")
     if (!message) return
     logger.info(message)
-    let msg = [{ type: 'json', data: `${message}` }]
+    let msg = [ { type: "json", data: `${message}` } ]
     this.reply(msg)
     return true
   }

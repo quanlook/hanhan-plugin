@@ -1,41 +1,41 @@
-import plugin from '../../../lib/plugins/plugin.js'
+import plugin from "../../../lib/plugins/plugin.js"
 
 export class RussiaRoundPlatePlugin extends plugin {
-  constructor () {
+  constructor() {
     super({
-      name: '憨憨小游戏-俄罗斯轮盘',
-      dsc: '憨憨小游戏-俄罗斯轮盘',
-      event: 'message',
+      name: "憨憨小游戏-俄罗斯轮盘",
+      dsc: "憨憨小游戏-俄罗斯轮盘",
+      event: "message",
       priority: 6,
       rule: [
         {
-          reg: '^#?(开启俄罗斯轮盘|开盘|开启轮盘|开启转盘|俄罗斯轮盘)$',
-          fnc: 'startELSGame'
+          reg: "^#?(开启俄罗斯轮盘|开盘|开启轮盘|开启转盘|俄罗斯轮盘)$",
+          fnc: "startELSGame"
         },
         {
-          reg: '^#?开枪$',
-          fnc: 'shoot'
+          reg: "^#?开枪$",
+          fnc: "shoot"
         },
         {
-          reg: '^#?结束游戏$',
-          fnc: 'stopELSGame'
+          reg: "^#?结束游戏$",
+          fnc: "stopELSGame"
         }, {
-          reg: '^#?当前子弹$',
-          fnc: 'nowBullet'
+          reg: "^#?当前子弹$",
+          fnc: "nowBullet"
         }
       ]
     })
   }
 
-  async startELSGame (e) {
+  async startELSGame(e) {
     if (!e.isGroup) {
-      e.reply('当前不在群聊里')
+      e.reply("当前不在群聊里")
       return false
     }
     let groupId = e.group_id
     // 判断是否已经开启了俄罗斯轮盘
     if (await redis.exists(`HANHAN:ELS2:${groupId}`) === 1) {
-      e.reply('当前群俄罗斯轮盘正在进行中！\n请发送#开枪 参与游戏')
+      e.reply("当前群俄罗斯轮盘正在进行中！\n请发送#开枪 参与游戏")
       return
     }
     // 随机生成数组，长度从3到8，其中一项为子弹，剩下的为空(0为空，1为子弹)
@@ -45,14 +45,14 @@ export class RussiaRoundPlatePlugin extends plugin {
     let target = Math.floor(Math.random() * length)
     arr[target] = 1
     // 记录一下当前的数组
-    Bot.logger.mark('arr', arr)
+    Bot.logger.mark("arr", arr)
     await redis.set(`HANHAN:ELS2:${groupId}`, JSON.stringify(arr), { EX: 60 * 60 * 24 })
     e.reply(`当前群俄罗斯轮盘已开启！\n弹夹有【${length}】发子弹。\n请发送#开枪 参与游戏`)
   }
 
-  async shoot (e) {
+  async shoot(e) {
     if (!e.isGroup) {
-      e.reply('当前不在群聊里')
+      e.reply("当前不在群聊里")
       return false
     }
     // 获取一下当前的用户昵称和群id
@@ -75,7 +75,7 @@ export class RussiaRoundPlatePlugin extends plugin {
       arr.shift()
       // 检查一下是否只剩下一发子弹，如果是则结束游戏
       if (arr.length === 1) {
-        e.reply([`【${username}】开了一枪，没响。\n由于只剩一发子弹，本轮游戏结束。\n请使用#开盘 开启新一轮游戏`, segment.image('https://www.loliapi.com/acg/pc/')])
+        e.reply([ `【${username}】开了一枪，没响。\n由于只剩一发子弹，本轮游戏结束。\n请使用#开盘 开启新一轮游戏`, segment.image("https://www.loliapi.com/acg/pc/") ])
         await redis.del(`HANHAN:ELS2:${groupId}`)
         return
       }
@@ -93,30 +93,30 @@ export class RussiaRoundPlatePlugin extends plugin {
     }
   }
 
-  async stopELSGame (e) {
+  async stopELSGame(e) {
     if (!e.isGroup) {
-      e.reply('当前不在群聊里')
+      e.reply("当前不在群聊里")
       return false
     }
     let groupId = e.group_id
     let arr = await redis.exists(`HANHAN:ELS2:${groupId}`)
     if (arr === 0) {
-      e.reply('当前群没有开盘')
+      e.reply("当前群没有开盘")
     } else {
       await redis.del(`HANHAN:ELS2:${groupId}`)
-      e.reply('结束成功')
+      e.reply("结束成功")
     }
   }
 
-  async nowBullet (e) {
+  async nowBullet(e) {
     if (!e.isGroup) {
-      e.reply('当前不在群聊里')
+      e.reply("当前不在群聊里")
       return false
     }
     let groupId = e.group_id
     let arr = JSON.parse(await redis.get(`HANHAN:ELS2:${groupId}`))
     if (!arr) {
-      e.reply('当前群没有开盘')
+      e.reply("当前群没有开盘")
     } else {
       e.reply(`当前还有【${arr.length}】发子弹)`)
     }

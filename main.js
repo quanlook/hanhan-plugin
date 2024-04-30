@@ -1,5 +1,5 @@
-import { createApps } from 'alemonjs'
-import { apps } from './index.js'
+import { createApps } from "alemonjs"
+import { apps } from "./index.js"
 const app = createApps(import.meta.url)
 app.setMessage(async e => {
   await runtime.init(e)
@@ -7,6 +7,6 @@ app.setMessage(async e => {
   e.sender.card = e.user_name
   return e
 })
-app.setCharacter('#')
+app.setCharacter("#")
 app.component(apps)
 app.mount()

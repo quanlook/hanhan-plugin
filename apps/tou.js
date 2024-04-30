@@ -1,30 +1,30 @@
-import plugin from '../../../lib/plugins/plugin.js'
-import common from '../../../lib/common/common.js'
+import plugin from "../../../lib/plugins/plugin.js"
+import common from "../../../lib/common/common.js"
 
 let gailv = 0.4 // 初始概率
 
 export class example extends plugin {
-  constructor () {
+  constructor() {
     super({
-      name: '憨憨-透',
-      dsc: '憨憨-透',
-      event: 'message',
+      name: "憨憨-透",
+      dsc: "憨憨-透",
+      event: "message",
       priority: 40,
       rule: [
         {
-          reg: '^#?透$',
-          fnc: 'c'
+          reg: "^#?透$",
+          fnc: "c"
         }
       ]
     })
   }
 
-  async c (e) {
+  async c(e) {
     let randomType = Math.random()
     console.log(randomType)
     let at = e.message[1].qq
     console.log(at)
-    let name = e.message[1].text.replace('@', '')
+    let name = e.message[1].text.replace("@", "")
     let name2 = e.sender.nickname
     let url2 = `https://q1.qlogo.cn/g?b=qq&s=0&nk=${at}`
     let url3 = `https://q1.qlogo.cn/g?b=qq&s=0&nk=${e.user_id}`
@@ -35,12 +35,12 @@ export class example extends plugin {
     if (randomType < gailv) {
       e.reply(cao2)
       await common.sleep(3000)
-      let msg2 = [image2, '我还没能,没能.......啊！ ']
+      let msg2 = [ image2, "我还没能,没能.......啊！ " ]
       e.reply(msg2)
     } else {
       e.reply(cao)
       await common.sleep(3000)
-      let msg3 = [image, '......细🐶，你，你就是不行！']
+      let msg3 = [ image, "......细🐶，你，你就是不行！" ]
       e.reply(msg3)
     }
   }

@@ -1,12 +1,12 @@
-import plugin from '../../../lib/plugins/plugin.js'
-import { getforwardMsg } from '../utils/common.js'
-import { Restart } from '../../other/restart.js'
-import { createRequire } from 'module'
-import _ from 'lodash'
+import plugin from "../../../lib/plugins/plugin.js"
+import { getforwardMsg } from "../utils/common.js"
+import { Restart } from "../../other/restart.js"
+import { createRequire } from "module"
+import _ from "lodash"
 
 process.cwd()
 const require = createRequire(import.meta.url)
-const { exec, execSync } = require('child_process')
+const { exec, execSync } = require("child_process")
 // 是否在更新中
 let uping = false
 
@@ -14,15 +14,15 @@ let uping = false
  * 处理插件更新
  */
 export class Update extends plugin {
-  constructor () {
+  constructor() {
     super({
-      name: '憨憨更新插件',
-      event: 'message',
+      name: "憨憨更新插件",
+      event: "message",
       priority: 1000,
       rule: [
         {
-          reg: '^#?(憨憨|hanhan)(插件)?(强制)?更新$',
-          fnc: 'update'
+          reg: "^#?(憨憨|hanhan)(插件)?(强制)?更新$",
+          fnc: "update"
         }
       ]
     })
@@ -32,22 +32,22 @@ export class Update extends plugin {
    * rule - 更新憨憨插件
    * @returns
    */
-  async update (e) {
+  async update(e) {
     if (!this.e.isMaster) {
-      e.reply('憨憨还是认主人的捏~')
+      e.reply("憨憨还是认主人的捏~")
       return false
     }
 
     /** 检查是否正在更新中 */
     if (uping) {
-      await this.reply('已有命令更新中..请勿重复操作')
+      await this.reply("已有命令更新中..请勿重复操作")
       return
     }
 
     /** 检查git安装 */
     if (!(await this.checkGit())) return
 
-    const isForce = this.e.msg.includes('强制')
+    const isForce = this.e.msg.includes("强制")
 
     /** 执行更新 */
     await this.runUpdate(isForce)
@@ -59,7 +59,7 @@ export class Update extends plugin {
     }
   }
 
-  restart () {
+  restart() {
     new Restart(this.e).restart()
   }
 
@@ -68,16 +68,16 @@ export class Update extends plugin {
    * @param {boolean} isForce 是否为强制更新
    * @returns
    */
-  async runUpdate (isForce) {
-    let command = 'git -C ./plugins/hanhan-plugin/ pull --no-rebase'
+  async runUpdate(isForce) {
+    let command = "git -C ./plugins/hanhan-plugin/ pull --no-rebase"
     if (isForce) {
       command = `git -C ./plugins/hanhan-plugin/ checkout . && ${command}`
-      this.e.reply('吼！大脑替换术！启动！')
+      this.e.reply("吼！大脑替换术！启动！")
     } else {
-      this.e.reply('憨憨升级！变成大憨憨~')
+      this.e.reply("憨憨升级！变成大憨憨~")
     }
     /** 获取上次提交的commitId，用于获取日志时判断新增的更新日志 */
-    this.oldCommitId = await this.getcommitId('hanhan-plugin')
+    this.oldCommitId = await this.getcommitId("hanhan-plugin")
     uping = true
     let ret = await this.execSync(command)
     uping = false
@@ -89,7 +89,7 @@ export class Update extends plugin {
     }
 
     /** 获取插件提交的最新时间 */
-    let time = await this.getTime('hanhan-plugin')
+    let time = await this.getTime("hanhan-plugin")
 
     if (/(Already up[ -]to[ -]date|已经是最新的)/.test(ret.stdout)) {
       await this.reply(`憨憨的大脑已经是最新版本的啦~\n最后更新时间：${time}`)
@@ -97,7 +97,7 @@ export class Update extends plugin {
       await this.reply(`憨憨的大脑获取到新知识啦~\n最后更新时间：${time}`)
       this.isUp = true
       /** 获取憨憨插件的更新日志 */
-      let log = await this.getLog('hanhan-plugin')
+      let log = await this.getLog("hanhan-plugin")
       await this.reply(log)
     }
 
@@ -111,12 +111,12 @@ export class Update extends plugin {
    * @param {string} plugin 插件名称
    * @returns
    */
-  async getLog (plugin = '') {
+  async getLog(plugin = "") {
     let cm = `cd ./plugins/${plugin}/ && git log  -20 --oneline --pretty=format:"%h||[%cd]  %s" --date=format:"%m-%d %H:%M"`
 
     let logAll
     try {
-      logAll = await execSync(cm, { encoding: 'utf-8' })
+      logAll = await execSync(cm, { encoding: "utf-8" })
     } catch (error) {
       logger.error(error.toString())
       this.reply(error.toString())
@@ -124,26 +124,24 @@ export class Update extends plugin {
 
     if (!logAll) return false
 
-    logAll = logAll.split('\n')
+    logAll = logAll.split("\n")
 
     let log = []
     for (let str of logAll) {
-      str = str.split('||')
+      str = str.split("||")
       if (str[0] === this.oldCommitId) break
-      if (str[1].includes('Merge branch')) continue
+      if (str[1].includes("Merge branch")) continue
       log.push(str[1])
     }
     let line = log.length
-    log = log.join('\n\n')
+    log = log.join("\n\n")
 
-    if (log.length <= 0) return ''
+    if (log.length <= 0) return ""
 
-    let end = ''
+    let end = ""
     end =
-      '更多详细信息，请前往Github查看\nhttps://github.com/hanhan258/hanhan-plugin'
-    let forwardMsg = [
-        `hanhan-plugin更新日志，共${line}条`, log, end
-    ]
+      "更多详细信息，请前往Github查看\nhttps://github.com/hanhan258/hanhan-plugin"
+    let forwardMsg = [ `hanhan-plugin更新日志，共${line}条`, log, end ]
     log = await getforwardMsg(this.e, forwardMsg, {
       shouldSendMsg: false
     })
@@ -155,10 +153,10 @@ export class Update extends plugin {
    * @param {string} plugin 插件名称
    * @returns
    */
-  async getcommitId (plugin = '') {
+  async getcommitId(plugin = "") {
     let cm = `git -C ./plugins/${plugin}/ rev-parse --short HEAD`
 
-    let commitId = await execSync(cm, { encoding: 'utf-8' })
+    let commitId = await execSync(cm, { encoding: "utf-8" })
     commitId = _.trim(commitId)
 
     return commitId
@@ -169,16 +167,16 @@ export class Update extends plugin {
    * @param {string} plugin 插件名称
    * @returns
    */
-  async getTime (plugin = '') {
+  async getTime(plugin = "") {
     let cm = `cd ./plugins/${plugin}/ && git log -1 --oneline --pretty=format:"%cd" --date=format:"%m-%d %H:%M"`
 
-    let time = ''
+    let time = ""
     try {
-      time = await execSync(cm, { encoding: 'utf-8' })
+      time = await execSync(cm, { encoding: "utf-8" })
       time = _.trim(time)
     } catch (error) {
       logger.error(error.toString())
-      time = '获取时间失败'
+      time = "获取时间失败"
     }
     return time
   }
@@ -189,43 +187,43 @@ export class Update extends plugin {
    * @param {string} stdout
    * @returns
    */
-  async gitErr (err, stdout) {
-    let msg = '憨憨失败啦！qwq'
+  async gitErr(err, stdout) {
+    let msg = "憨憨失败啦！qwq"
     let errMsg = err.toString()
     stdout = stdout.toString()
 
-    if (errMsg.includes('Timed out')) {
-      let remote = errMsg.match(/'(.+?)'/g)[0].replace(/'/g, '')
+    if (errMsg.includes("Timed out")) {
+      let remote = errMsg.match(/'(.+?)'/g)[0].replace(/'/g, "")
       await this.reply(msg + `\n憨憨找不到网络了qwq，(问题为：${remote})`)
       return
     }
 
     if (/Failed to connect|unable to access/g.test(errMsg)) {
-      let remote = errMsg.match(/'(.+?)'/g)[0].replace(/'/g, '')
+      let remote = errMsg.match(/'(.+?)'/g)[0].replace(/'/g, "")
       await this.reply(msg + `\n憨憨找不到网络了qwq(问题为：${remote})`)
       return
     }
 
-    if (errMsg.includes('be overwritten by merge')) {
+    if (errMsg.includes("be overwritten by merge")) {
       await this.reply(
         msg +
         `最新的大脑和现在的憨憨大脑打架啦~：\n${errMsg}\n` +
-        '你肯定是偷偷动了憨憨的大脑！请执行#憨憨强制更新，放弃本地修改'
+        "你肯定是偷偷动了憨憨的大脑！请执行#憨憨强制更新，放弃本地修改"
       )
       return
     }
 
-    if (stdout.includes('CONFLICT')) {
+    if (stdout.includes("CONFLICT")) {
       await this.reply([
-        msg + '最新的大脑和现在的憨憨大脑打架啦~\n',
+        msg + "最新的大脑和现在的憨憨大脑打架啦~\n",
         errMsg,
         stdout,
-        '\n你肯定是偷偷动了憨憨的大脑！请执行#强制更新，放弃本地修改'
+        "\n你肯定是偷偷动了憨憨的大脑！请执行#强制更新，放弃本地修改"
       ])
       return
     }
 
-    await this.reply([errMsg, stdout])
+    await this.reply([ errMsg, stdout ])
   }
 
   /**
@@ -233,7 +231,7 @@ export class Update extends plugin {
    * @param {string} cmd git命令
    * @returns
    */
-  async execSync (cmd) {
+  async execSync(cmd) {
     return new Promise((resolve, reject) => {
       exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
         resolve({ error, stdout, stderr })
@@ -245,10 +243,10 @@ export class Update extends plugin {
    * 检查git是否安装
    * @returns
    */
-  async checkGit () {
-    let ret = await execSync('git --version', { encoding: 'utf-8' })
-    if (!ret || !ret.includes('git version')) {
-      await this.reply('啊？你怎么连git都没装捏...憨憨链接不到大脑啦~')
+  async checkGit() {
+    let ret = await execSync("git --version", { encoding: "utf-8" })
+    if (!ret || !ret.includes("git version")) {
+      await this.reply("啊？你怎么连git都没装捏...憨憨链接不到大脑啦~")
       return false
     }
     return true

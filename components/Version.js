@@ -1,5 +1,5 @@
-import fs from 'fs'
-import lodash from 'lodash'
+import fs from "fs"
+import lodash from "lodash"
 
 const _path = process.cwd()
 const _logPath = `${_path}/plugins/hanhan-plugin/CHANGELOG.md`
@@ -9,22 +9,22 @@ let changelogs = []
 let currentVersion
 let versionCount = 4
 
-let packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+let packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"))
 
-const getLine = function (line) {
-  line = line.replace(/(^\s*\*|\r)/g, '')
-  line = line.replace(/\s*`([^`]+`)/g, '<span class="cmd">$1')
-  line = line.replace(/`\s*/g, '</span>')
-  line = line.replace(/\s*\*\*([^\*]+\*\*)/g, '<span class="strong">$1')
-  line = line.replace(/\*\*\s*/g, '</span>')
-  line = line.replace(/ⁿᵉʷ/g, '<span class="new"></span>')
+const getLine = function(line) {
+  line = line.replace(/(^\s*\*|\r)/g, "")
+  line = line.replace(/\s*`([^`]+`)/g, "<span class=\"cmd\">$1")
+  line = line.replace(/`\s*/g, "</span>")
+  line = line.replace(/\s*\*\*([^\*]+\*\*)/g, "<span class=\"strong\">$1")
+  line = line.replace(/\*\*\s*/g, "</span>")
+  line = line.replace(/ⁿᵉʷ/g, "<span class=\"new\"></span>")
   return line
 }
 
 try {
   if (fs.existsSync(_logPath)) {
-    logs = fs.readFileSync(_logPath, 'utf8') || ''
-    logs = logs.split('\n')
+    logs = fs.readFileSync(_logPath, "utf8") || ""
+    logs = logs.split("\n")
 
     let temp = {}
     let lastLine = {}
@@ -71,28 +71,28 @@ try {
 }
 
 const yunzaiVersion = packageJson.version
-const isV3 = yunzaiVersion[0] === '3'
+const isV3 = yunzaiVersion[0] === "3"
 let isMiao = false
-let name = 'Yunzai-Bot'
-if (packageJson.name === 'miao-yunzai') {
+let name = "Yunzai-Bot"
+if (packageJson.name === "miao-yunzai") {
   isMiao = true
-  name = 'Miao-Yunzai'
-} else if (packageJson.name === 'trss-yunzai') {
+  name = "Miao-Yunzai"
+} else if (packageJson.name === "trss-yunzai") {
   isMiao = true
-  name = 'TRSS-Yunzai'
+  name = "TRSS-Yunzai"
 }
 
 let Version = {
   isV3,
   isMiao,
   name,
-  get version () {
+  get version() {
     return currentVersion
   },
-  get yunzai () {
+  get yunzai() {
     return yunzaiVersion
   },
-  get changelogs () {
+  get changelogs() {
     return changelogs
   }
 }
